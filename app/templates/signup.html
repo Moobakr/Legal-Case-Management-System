@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Create Account</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name_ar" class="form-label">First Name (Arabic)</label>
+                            <input type="text" class="form-control" id="first_name_ar" name="first_name_ar" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name_ar" class="form-label">Last Name (Arabic)</label>
+                            <input type="text" class="form-control" id="last_name_ar" name="last_name_ar" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name_en" class="form-label">First Name (English)</label>
+                            <input type="text" class="form-control" id="first_name_en" name="first_name_en" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name_en" class="form-label">Last Name (English)</label>
+                            <input type="text" class="form-control" id="last_name_en" name="last_name_en" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="national_id" class="form-label">National ID</label>
+                            <input type="text" class="form-control" id="national_id" name="national_id" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="gender" class="form-label">Gender</label>
+                            <select class="form-select" id="gender" name="gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="city" class="form-label">City</label>
+                            <select class="form-select" id="city" name="city" required>
+                                <option value="">Select City</option>
+                                <option value="Cairo">Cairo</option>
+                                <option value="Giza">Giza</option>
+                                <option value="Alexandria">Alexandria</option>
+                                <option value="Nasr City">Nasr City</option>
+                                <option value="Mansoura">Mansoura</option>
+                                <option value="Tanta">Tanta</option>
+                                <option value="Asyut">Asyut</option>
+                                <option value="Fayoum">Fayoum</option>
+                                <option value="Zagazig">Zagazig</option>
+                                <option value="Ismailia">Ismailia</option>
+                                <option value="Luxor">Luxor</option>
+                                <option value="Aswan">Aswan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Create Account</button>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

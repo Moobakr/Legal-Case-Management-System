@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="card-title">{{ case.title }}</h2>
+                        <span class="badge {% if case.status == 'Open' %}bg-success{% elif case.status == 'Pending' %}bg-warning{% else %}bg-secondary{% endif %}">
+                            {{ case.status }}
+                        </span>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Case Information</h5>
+                            <hr>
+                            <p><strong>Case Type:</strong> {{ case.get_case_type_display }}</p>
+                            <p><strong>Filed Date:</strong> {{ case.date_filed|date:"F d, Y" }}</p>
+                            <p><strong>Next Hearing:</strong> {{ case.next_hearing_date|date:"F d, Y" }}</p>
+                            <p><strong>Description:</strong></p>
+                            <p class="text-muted">{{ case.description }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Assigned Personnel</h5>
+                            <hr>
+                            <p><strong>Lawyer:</strong> {{ case.lawyer.full_name }}</p>
+                            <p><strong>Lawyer Contact:</strong> {{ case.lawyer.phone }}</p>
+                            <p><strong>Lawyer Email:</strong> {{ case.lawyer.email }}</p>
+                            <p><strong>Court:</strong> {{ case.court.name }}</p>
+                            <p><strong>Court Location:</strong> {{ case.court.location }}</p>
+                        </div>
+                    </div>
+
+                    {% if case.verdict %}
+                    <div class="mb-4">
+                        <h5>Verdict</h5>
+                        <hr>
+                        <p><strong>Date:</strong> {{ case.verdict_date|date:"F d, Y" }}</p>
+                        <p class="text-muted">{{ case.verdict }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

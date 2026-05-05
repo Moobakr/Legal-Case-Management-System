@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <h1 class="display-4 mb-4">Welcome to Egypt Law System</h1>
+        
+        {% if user.is_authenticated %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Ready to file a new case?</h5>
+                    <p class="card-text">Start the process of filing your legal case with our easy-to-use system.</p>
+                    <a href="{% url 'new_case' %}" class="btn btn-primary">File New Case</a>
+                </div>
+            </div>
+        {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Get Started Today</h5>
+                    <p class="card-text">Create an account or log in to file your legal case.</p>
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="{% url 'login' %}" class="btn btn-primary me-md-2">Login</a>
+                        <a href="{% url 'signup' %}" class="btn btn-outline-primary">Sign Up</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

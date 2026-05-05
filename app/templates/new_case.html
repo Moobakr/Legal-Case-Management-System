@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">File a New Case</h2>
+    
+    <!-- Search and Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Find the Right Lawyer</h5>
+            <form id="filterForm" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Search Lawyers</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           placeholder="Search by name, expertise, or languages"
+                           value="{{ current_filters.search }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="min_rating" class="form-label">Min Rating</label>
+                    <select class="form-select" id="min_rating" name="min_rating">
+                        <option value="0">Any Rating</option>
+                        <option value="3" {% if current_filters.min_rating == '3' %}selected{% endif %}>3+ Stars</option>
+                        <option value="4" {% if current_filters.min_rating == '4' %}selected{% endif %}>4+ Stars</option>
+                        <option value="4.5" {% if current_filters.min_rating == '4.5' %}selected{% endif %}>4.5+ Stars</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="min_experience" class="form-label">Min Experience</label>
+                    <select class="form-select" id="min_experience" name="min_experience">
+                        <option value="0">Any Experience</option>
+                        <option value="5" {% if current_filters.min_experience == '5' %}selected{% endif %}>5+ Years</option>
+                        <option value="10" {% if current_filters.min_experience == '10' %}selected{% endif %}>10+ Years</option>
+                        <option value="15" {% if current_filters.min_experience == '15' %}selected{% endif %}>15+ Years</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="max_fee" class="form-label">Max Consultation Fee</label>
+                    <select class="form-select" id="max_fee" name="max_fee">
+                        <option value="">Any Fee</option>
+                        <option value="500" {% if current_filters.max_fee == '500' %}selected{% endif %}>Up to 500 EGP</option>
+                        <option value="1000" {% if current_filters.max_fee == '1000' %}selected{% endif %}>Up to 1000 EGP</option>
+                        <option value="2000" {% if current_filters.max_fee == '2000' %}selected{% endif %}>Up to 2000 EGP</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Case Filing Form -->
+    <form method="POST" class="needs-validation" novalidate enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="title" class="form-label">Case Title</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="case_type" class="form-label">Case Type</label>
+            <select class="form-select" id="case_type" name="case_type" required onchange="updateLawyerRecommendations()">
+                <option value="">Select Case Type</option>
+                {% for case_type_code, case_type_name in case_types %}
+                    <option value="{{ case_type_code }}" {% if current_filters.case_type == case_type_code %}selected{% endif %}>
+                        {{ case_type_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="lawyer" class="form-label">Recommended Lawyers</label>
+            <select class="form-select" id="lawyer" name="lawyer" required>
+                <option value="">Select a Lawyer</option>
+                {% for lawyer in recommended_lawyers %}
+                    <option value="{{ lawyer.id }}" data-specialization="{{ lawyer.specialization }}">
+                        {{ lawyer.full_name }} - {{ lawyer.get_specialization_display }}
+                        (Rating: {{ lawyer.rating }}, Experience: {{ lawyer.years_of_experience }} years,
+                        Success Rate: {{ lawyer.get_success_rate_display }},
+                        Fee: {{ lawyer.get_consultation_fee_display }})
+                    </option>
+                {% endfor %}
+            </select>
+            <div class="form-text">Lawyers are recommended based on your case type and location</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="court" class="form-label">Recommended Courts</label>
+            <select class="form-select" id="court" name="court" required>
+                <option value="">Select a Court</option>
+                {% for court in recommended_courts %}
+                    <option value="{{ court.id }}">{{ court.name }} ({{ court.get_jurisdiction_level_display }})</option>
+                {% endfor %}
+            </select>
+            <div class="form-text">Courts are recommended based on your location</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Case Description</label>
+            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+        </div>
+
+        <!-- Document Upload Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Case Documents</h5>
+                <div id="documentList">
+                    <div class="document-item mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Document Title</label>
+                                <input type="text" class="form-control" name="document_titles[]" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Document Type</label>
+                                <select class="form-select" name="document_types[]" required>
+                                    <option value="evidence">Evidence</option>
+                                    <option value="contract">Contract</option>
+                                    <option value="report">Report</option>
+                                    <option value="photo">Photo</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">File</label>
+                                <input type="file" class="form-control" name="document_files[]" required>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button" class="btn btn-danger w-100" onclick="removeDocument(this)">×</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary mt-2" onclick="addDocument()">Add Another Document</button>
+            </div>
+        </div>
+
+        <!-- Participants Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Case Participants</h5>
+                <div id="participantList">
+                    <div class="participant-item mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" class="form-control" name="participant_names[]" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Role</label>
+                                <select class="form-select" name="participant_roles[]" required>
+                                    <option value="plaintiff">Plaintiff</option>
+                                    <option value="defendant">Defendant</option>
+                                    <option value="witness">Witness</option>
+                                    <option value="expert">Expert Witness</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">National ID</label>
+                                <input type="text" class="form-control" name="participant_ids[]">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Contact Info</label>
+                                <input type="text" class="form-control" name="participant_contacts[]" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button" class="btn btn-danger w-100" onclick="removeParticipant(this)">×</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary mt-2" onclick="addParticipant()">Add Another Participant</button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">File Case</button>
+    </form>
+</div>
+
+<script>
+function updateLawyerRecommendations() {
+    const caseType = document.getElementById('case_type').value;
+    const lawyerSelect = document.getElementById('lawyer');
+    const options = lawyerSelect.getElementsByTagName('option');
+    
+    // Show/hide lawyers based on case type
+    for (let option of options) {
+        if (option.value === '') continue; // Skip the default option
+        
+        const specialization = option.getAttribute('data-specialization');
+        if (specialization === caseType) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+        }
+    }
+    
+    // Reset selection
+    lawyerSelect.value = '';
+}
+
+// Add event listeners for filter form
+document.getElementById('filterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const params = new URLSearchParams(formData);
+    window.location.href = `${window.location.pathname}?${params.toString()}`;
+});
+
+function addDocument() {
+    const documentList = document.getElementById('documentList');
+    const newDocument = document.createElement('div');
+    newDocument.className = 'document-item mb-3';
+    newDocument.innerHTML = `
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Document Title</label>
+                <input type="text" class="form-control" name="document_titles[]" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Document Type</label>
+                <select class="form-select" name="document_types[]" required>
+                    <option value="evidence">Evidence</option>
+                    <option value="contract">Contract</option>
+                    <option value="report">Report</option>
+                    <option value="photo">Photo</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">File</label>
+                <input type="file" class="form-control" name="document_files[]" required>
+            </div>
+            <div class="col-md-1">
+                <label class="form-label">&nbsp;</label>
+                <button type="button" class="btn btn-danger w-100" onclick="removeDocument(this)">×</button>
+            </div>
+        </div>
+    `;
+    documentList.appendChild(newDocument);
+}
+
+function removeDocument(button) {
+    button.closest('.document-item').remove();
+}
+
+function addParticipant() {
+    const participantList = document.getElementById('participantList');
+    const newParticipant = document.createElement('div');
+    newParticipant.className = 'participant-item mb-3';
+    newParticipant.innerHTML = `
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" name="participant_names[]" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Role</label>
+                <select class="form-select" name="participant_roles[]" required>
+                    <option value="plaintiff">Plaintiff</option>
+                    <option value="defendant">Defendant</option>
+                    <option value="witness">Witness</option>
+                    <option value="expert">Expert Witness</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">National ID</label>
+                <input type="text" class="form-control" name="participant_ids[]">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Contact Info</label>
+                <input type="text" class="form-control" name="participant_contacts[]" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <button type="button" class="btn btn-danger w-100" onclick="removeParticipant(this)">×</button>
+            </div>
+        </div>
+    `;
+    participantList.appendChild(newParticipant);
+}
+
+function removeParticipant(button) {
+    button.closest('.participant-item').remove();
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">My Cases Dashboard</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Cases</h5>
+                    <h2 class="card-text">{{ total_cases }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Active Cases</h5>
+                    <h2 class="card-text">{{ active_cases }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Upcoming Hearings</h5>
+                    <h2 class="card-text">{{ upcoming_hearings }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="card-title">My Cases</h3>
+                <a href="{% url 'new_case' %}" class="btn btn-primary">File New Case</a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Case Title</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Lawyer</th>
+                            <th>Court</th>
+                            <th>Filed Date</th>
+                            <th>Next Hearing</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for case in cases %}
+                        <tr>
+                            <td>{{ case.title }}</td>
+                            <td>{{ case.get_case_type_display }}</td>
+                            <td>
+                                <span class="badge {% if case.status == 'Open' %}bg-success{% elif case.status == 'Pending' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                    {{ case.status }}
+                                </span>
+                            </td>
+                            <td>{{ case.lawyer.full_name }}</td>
+                            <td>{{ case.court.name }}</td>
+                            <td>{{ case.date_filed|date:"M d, Y" }}</td>
+                            <td>
+                                {% if case.next_hearing_date %}
+                                    {{ case.next_hearing_date|date:"M d, Y" }}
+                                {% else %}
+                                    Not scheduled
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'case_details' case.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No cases found. <a href="{% url 'new_case' %}">File your first case</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
